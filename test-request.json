@@ -1,0 +1,10 @@
+{
+    "enviarPedido": {
+        "numPedido": "75630275",
+        "cantidadPedido": "1",
+        "codigoEAN": "00110000765191002104587",
+        "nombreProducto": "Armario INVAL",
+        "numDocumento": "1113987400",
+        "direccion": "CR 72B 45 12 APT 301"
+    }
+}
