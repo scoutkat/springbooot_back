@@ -92,46 +92,162 @@ Servicio de envío de pedidos ACME está operativo
 
 ### Prerrequisitos
 
-- Java 17 o superior
-- Maven 3.6 o superior
-- Docker (opcional, para contenerización)
+- **Java 17 o superior** - Requerido para ejecutar la aplicación
+- **Git** - Para clonar el repositorio
+- **Docker** (opcional) - Para ejecutar en contenedores
 
-### Ejecución Local
+**NOTA:** No necesitas instalar Maven por separado. El proyecto incluye Maven Wrapper que descarga automáticamente las dependencias necesarias.
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone <repositorio-url>
-   cd practico_spring
-   ```
+### Verificación de Prerrequisitos
 
-2. **Compilar el proyecto:**
-   ```bash
-   mvn clean compile
-   ```
+```bash
+# Verificar Java
+java -version
+# Debe mostrar: java version "17.0.x" o superior
 
-3. **Ejecutar la aplicación:**
-   ```bash
-   mvn spring-boot:run
-   ```
+# Verificar Git
+git --version
+```
 
-4. **Acceder al servicio:**
-   - URL base: http://localhost:8080/acme-envio-pedidos
-   - Health check: http://localhost:8080/acme-envio-pedidos/api/pedidos/health
+### Paso 1: Clonar el Repositorio
 
-### Ejecución con Docker
+```bash
+git clone https://github.com/scoutkat/springbooot_back.git
+cd springbooot_back
+```
 
-1. **Construir la imagen Docker:**
-   ```bash
-   docker build -t acme-envio-pedidos:1.0.0 .
-   ```
+### Paso 2: Instalación Automática de Dependencias
 
-2. **Ejecutar el contenedor:**
-   ```bash
-   docker run -p 8080:8080 --name acme-pedidos acme-envio-pedidos:1.0.0
-   ```
+El proyecto usa Maven Wrapper que se encarga de descargar todo automáticamente:
 
-3. **Acceder al servicio:**
-   - URL base: http://localhost:8080/acme-envio-pedidos
+**En Windows:**
+```bash
+# El wrapper descargará Maven 3.9.4 y todas las dependencias
+.\mvnw.cmd clean install
+```
+
+**En Linux/Mac:**
+```bash
+# El wrapper descargará Maven 3.9.4 y todas las dependencias
+./mvnw clean install
+```
+
+**¿Qué hace este comando?**
+- ✅ Descarga Maven 3.9.4 automáticamente (si no está instalado)
+- ✅ Descarga todas las dependencias del proyecto (Spring Boot, Jackson, etc.)
+- ✅ Compila el código fuente
+- ✅ Ejecuta las pruebas unitarias
+- ✅ Genera el archivo JAR ejecutable
+
+### Paso 3: Ejecutar la Aplicación
+
+**Opción A: Ejecución directa (Recomendado para desarrollo)**
+
+```bash
+# Windows
+.\mvnw.cmd spring-boot:run
+
+# Linux/Mac
+./mvnw spring-boot:run
+```
+
+**Opción B: Ejecutar el JAR compilado**
+
+```bash
+# Después de ejecutar clean install, el JAR estará en target/
+java -jar target/envio-pedidos-1.0.0.jar
+```
+
+**Opción C: Ejecución con Docker (Recomendado para producción)**
+
+```bash
+# Construir imagen Docker
+docker build -t acme-envio-pedidos:1.0.0 .
+
+# Ejecutar contenedor
+docker run -p 8080:8080 --name acme-pedidos acme-envio-pedidos:1.0.0
+
+# O usando docker-compose (más fácil)
+docker-compose up --build
+```
+
+### Paso 4: Verificar Instalación
+
+La aplicación estará disponible en:
+- **URL Base:** http://localhost:8080/acme-envio-pedidos
+- **Health Check:** http://localhost:8080/acme-envio-pedidos/api/pedidos/health
+
+```bash
+# Verificar que esté funcionando
+curl http://localhost:8080/acme-envio-pedidos/api/pedidos/health
+# Respuesta esperada: Servicio de envío de pedidos ACME está operativo
+```
+
+### Solución de Problemas Comunes
+
+| Problema | Solución |
+|----------|----------|
+| `java: command not found` | Instalar Java 17+ desde [Oracle](https://www.oracle.com/java/technologies/downloads/) o [Adoptium](https://adoptium.net/) |
+| `mvn: command not found` | No necesitas Maven, usa el wrapper: `.\mvnw.cmd` (Windows) o `./mvnw` (Linux/Mac) |
+| `Permission denied` (Linux/Mac) | Dar permisos: `chmod +x mvnw` |
+| `Port 8080 already in use` | Cambiar puerto en `application.properties` o cerrar el proceso que usa el puerto |
+| `Connection refused` | Asegúrate que la aplicación esté corriendo (ve los logs de inicio) |
+
+### Estructura de Dependencias (Automáticas)
+
+El Maven Wrapper instalará automáticamente:
+
+```xml
+<!-- Spring Boot Framework -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <version>3.2.0</version>
+</dependency>
+
+<!-- Soporte para Web Services (XML/SOAP) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web-services</artifactId>
+    <version>3.2.0</version>
+</dependency>
+
+<!-- Procesamiento JSON -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+</dependency>
+
+<!-- Validación de datos -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+```
+
+**Nota importante:** Todas estas dependencias se descargan automáticamente. No necesitas instalar nada manualmente excepto Java 17+.
+
+## Configuración
+
+Las propiedades de configuración se encuentran en `src/main/resources/application.properties`:
+
+- `server.port`: Puerto del servidor (default: 8080)
+- `server.servlet.context-path`: Context path (default: /acme-envio-pedidos)
+- `external.api.url`: URL del API externo para envío de pedidos
+
+### Variables de Entorno (Opcional)
+
+Puedes configurar estas variables de entorno para sobreescribir la configuración:
+
+```bash
+# En Windows
+set SERVER_PORT=8080
+set EXTERNAL_API_URL=https://tu-api-externa.com/pedidos
+
+# En Linux/Mac
+export SERVER_PORT=8080
+export EXTERNAL_API_URL=https://tu-api-externa.com/pedidos
+```
 
 ## Pruebas con Postman
 
